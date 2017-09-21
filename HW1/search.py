@@ -75,19 +75,22 @@ def tinyMazeSearch(problem):
 
 
 def depthFirstSearch(problem):
-    visited = []  # koordinater besokt
-    stack = util.Stack()
-    stack.push((problem.getStartState(), []))  # coordinat og hvordan komme dit
+    visited = []  # Nodes visited
+    stack = util.Stack() #Using a stack so that when a node is popped it is the last node that was pushed to the stack.
+    stack.push((problem.getStartState(), []))  # Pushing coordinate and how to get there to the stack.
+                                               # For the root node is "how to get there" an empty list.
 
     while not stack.isEmpty():
-        u = stack.pop()
-        node = u[0]
-        directions = u[1]
+        node, directions = stack.pop()
 
         if not node in visited:
             visited.append(node)
-            if problem.isGoalState(node):
+            if problem.isGoalState(node): # Checking if the current node is the goal state, if so return the directions
                 return directions
+
+            # Looping through the successors of the current node, pushing the coordinates of the successor with
+            # the required action to reach the successor
+
             for successor in problem.getSuccessors(node):
                 coordinate = successor[0]
                 direction = successor[1]
@@ -97,18 +100,20 @@ def depthFirstSearch(problem):
 
 def breadthFirstSearch(problem):
     visited = []  # List of coordinates visisted
-    queue = util.Queue()
-    queue.push((problem.getStartState(), []))  # stack with coordinates and how to get there
+    queue = util.Queue() # Using a stack so that when a node is popped it is the first node that was pushed to the queue.
+    queue.push((problem.getStartState(), []))  # Pushing coordinate and how to get there to the queue.
+                                               # For the root node is "how to get there" an empty list.
 
     while not queue.isEmpty():
-        u = queue.pop()
-        node = u[0]
-        directions = u[1]
+        node, directions = queue.pop()
 
         if not node in visited:
             visited.append(node)
-            if problem.isGoalState(node):
+            if problem.isGoalState(node): # Checking if the current node is the goal state, if so return the directions
                 return directions
+
+            # Looping through the successors of the current node, pushing the coordinates of the successor with
+            # the required action to reach the successor
             for successor in problem.getSuccessors(node):
                 coordinate = successor[0]
                 direction = successor[1]
@@ -135,29 +140,29 @@ def nullHeuristic(state, problem=None):
 def aStarSearch(problem, heuristic=nullHeuristic):
     "Search the node that has the lowest combined cost and heuristic first."
 
-    visited = []  #
-    pqueue = util.PriorityQueue()
-    #priorirty queue = item,p priority. here, the g(n) = 0, so only add h(n)
+    visited = []  # Visited nodes
+    pqueue = util.PriorityQueue() # Using a priorityqueue to be able to pop the node with the lowest estimated path cost.
+    # priorirty queue = item,p priority. here, the g(n) = 0, so only add h(n)
     pqueue.push((problem.getStartState(), []), heuristic(problem.getStartState(), problem))
 
     while pqueue:
-        u = pqueue.pop()
-        node = u[0]
-        directions = u[1]
+        node, directions = pqueue.pop()
         if not node in visited:
             visited.append(node)
-            if problem.isGoalState(node):
+            if problem.isGoalState(node): # Checking if the current node is the goal state, if so return the directions
                 return directions
+
+            # Looping through the successors of the current node, pushing the coordinates of the successor with
+            # the required actions to reach the successor and the path cost..
             for successor in problem.getSuccessors(node):
                 coordinate = successor[0]
                 direction = successor[1]
+                # appending the action from current node to successor to
+                #  the list of all actions required from root node to current node
                 newDirections = directions + [direction]
                 # f(n) = g(n) + h(n)
                 newCost = problem.getCostOfActions(newDirections) + heuristic(coordinate, problem)
                 pqueue.push((coordinate, newDirections), newCost)
-
-    return []
-
 
 # Abbreviations
 bfs = breadthFirstSearch

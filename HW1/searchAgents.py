@@ -292,7 +292,6 @@ class CornersProblem(search.SearchProblem):
         # in initializing the problem
         "*** YOUR CODE HERE ***"
 
-#NOTE TO SELF:
     #state = (current position, [list of visited corners])
     def getStartState(self):
         """
@@ -302,13 +301,13 @@ class CornersProblem(search.SearchProblem):
         "*** YOUR CODE HERE ***"
         return (self.startingPosition,[])
 
-
     def isGoalState(self, state):
         """
         Returns whether this search state is a goal state of the problem.
         """
         "*** YOUR CODE HERE ***"
-        return(len(state[1]) == 4)
+        # state[1] is the list of corners visited. If the length of this list is 4, the goal has been reached.
+        return (len(state[1]) == 4)
 
     def getSuccessors(self, state):
         """
@@ -324,23 +323,29 @@ class CornersProblem(search.SearchProblem):
         currentPosition = state[0]
         exploredCorners = state[1]
         successors = []
+
+        # Looping through all possible moves, and checking whether this move from the current position is straight
+        # into a wall.
         for action in [Directions.NORTH, Directions.SOUTH, Directions.EAST, Directions.WEST]:
             # Add a successor state to the successor list if the action is legal
             # Here's a code snippet for figuring out whether a new position hits a wall:
-            x,y = currentPosition
+            x, y = currentPosition
             dx, dy = Actions.directionToVector(action)
             nextx, nexty = int(x + dx), int(y + dy)
             hitsWall = self.walls[nextx][nexty]
 
-
+            # If the move is not straight into a wall
             if hitsWall == False:
-                if (nextx,nexty) in self.corners and (nextx,nexty) not in exploredCorners:
-                    newCorners = exploredCorners + [(nextx,nexty)]
-                    successors.append((((nextx,nexty),newCorners),action,1))
+                # checking whether the successor is a corner that is not already explored. If so, adding the corner
+                # to explored corners and adding the coordinate, the explored corners and the action to get there
+                #  from the current position to the successors.
+                if (nextx, nexty) in self.corners and (nextx, nexty) not in exploredCorners:
+                    newCorners = exploredCorners + [(nextx, nexty)]
+                    successors.append((((nextx, nexty), newCorners), action, 1))
                 else:
                     successors.append((((nextx, nexty), exploredCorners), action, 1))
 
-        self._expanded += 1 # DO NOT CHANGE
+        self._expanded += 1  # DO NOT CHANGE
         return successors
 
     def getCostOfActions(self, actions):
@@ -349,7 +354,7 @@ class CornersProblem(search.SearchProblem):
         include an illegal move, return 999999.  This is implemented for you.
         """
         if actions == None: return 999999
-        x,y= self.startingPosition
+        x, y = self.startingPosition
         for action in actions:
             dx, dy = Actions.directionToVector(action)
             x, y = int(x + dx), int(y + dy)
@@ -374,22 +379,26 @@ def cornersHeuristic(state, problem):
     "*** YOUR CODE HERE ***"
 
     corners = problem.corners  # These are the corner coordinates
-    walls = problem.walls  # These are the walls of the maze, as a Grid (game.py)
-    visited = state[1]
-    unvisited = []
-    position = state[0]
+    visited = state[1]  # This is a list of the visited corners
+    position = state[0]  # This is pacmans position
     heuristicValue = 0
     pQueue = util.PriorityQueue()
+
+    # looping through all the corners. Then checking whether the corner is visited, if not: pushing the corner
+    # to the queue prioritizing on the linear distance from the current position to the corner.
+
     for corner in corners:
         if corner not in visited:
             pQueue.push(corner, math.sqrt(((position[0] - corner[0]) ** 2 + (position[1] - corner[1]) ** 2)))
-            unvisited.append(corner)
 
     while not pQueue.isEmpty():
-        corner = pQueue.pop()
+        corner = pQueue.pop()  # popping the corner which is closest to the current position, and adding the distance
+        # and adding the distance to the heuristics
         heuristicValue += math.sqrt(((position[0] - corner[0]) ** 2 + (position[1] - corner[1]) ** 2))
         position = corner
         list = []
+        # Looping through the remaining corners pushing them to the queue prioritised by the distance to the new current
+        # position, which is now a corner.
         while not pQueue.isEmpty():
             node = pQueue.pop()
             list.append((node, math.sqrt(((position[0] - node[0]) ** 2 + (position[1] - node[1]) ** 2))))
@@ -490,21 +499,24 @@ def foodHeuristic(state, problem):
     """
     position, foodGrid = state
     "*** YOUR CODE HERE ***"
-    position = state[0]
-    foodgrid = state[1]
-
     heuristic = 0
     foodNotEaten = foodGrid.asList()
 
     pQueue = util.PriorityQueue()
-    for corner in foodNotEaten:
-        pQueue.push(corner, math.sqrt((position[0] - corner[0]) ** 2 + (position[1] - corner[1]) ** 2))
+    # looping through all the food-positions in foodNotEaten, pushing the coordinate
+    # to the queue prioritizing on the linear distance from the current position to the food.
+    for food in foodNotEaten:
+        pQueue.push(food, math.sqrt((position[0] - food[0]) ** 2 + (position[1] - food[1]) ** 2))
 
     while not pQueue.isEmpty():
-        corner = pQueue.pop()
-        heuristic += math.sqrt((position[0] - corner[0]) ** 2 + (position[1] - corner[1]) ** 2) * 0.5
-        position = corner
+        # popping the food closest to the current position, and adding the linear distance to the heuristics
+        food = pQueue.pop()
+        heuristic += math.sqrt((position[0] - food[0]) ** 2 + (position[1] - food[1]) ** 2) * 0.5
+        position = food  # changing current position to the food closest to the current position
         list = []
+
+        # Looping through the remaining dots pushing them to the queue prioritised by distance to the new current
+        # position, which is now a food-position.
         while not pQueue.isEmpty():
             node = pQueue.pop()
             list.append((node, math.sqrt((position[0] - node[0]) ** 2 + (position[1] - node[1]) ** 2)))
@@ -542,6 +554,7 @@ class ClosestDotSearchAgent(SearchAgent):
         problem = AnyFoodSearchProblem(gameState)
 
         "*** YOUR CODE HERE ***"
+        # using the breadthFirstSearch to find the path to the closest dot
         return search.breadthFirstSearch(problem)
 
 
@@ -589,7 +602,7 @@ def mazeDistance(point1, point2, gameState):
 
     Example usage: mazeDistance( (2,4), (5,6), gameState)
 
-    This might be a useful helper function for your ApproximateSearchAgent.
+    This might be a useful helper function for your ApproximateSearchAgent..
     """
     x1, y1 = point1
     x2, y2 = point2
